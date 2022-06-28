@@ -6,12 +6,23 @@ import FlashMessage, { showMessage } from "react-native-flash-message";
 import ScrollableTabView from "react-native-scrollable-tab-view";
 
 import {
+  bezierData,
   contributionData,
   data,
   pieChartData,
   progressChartData,
   stackedBarGraphData
 } from "./data";
+
+// import {
+//   BarChart,
+//   ContributionGraph,
+//   LineChart,
+//   PieChart,
+//   ProgressChart,
+//   StackedBarChart
+// } from "./dist/";
+
 import {
   BarChart,
   ContributionGraph,
@@ -19,10 +30,24 @@ import {
   PieChart,
   ProgressChart,
   StackedBarChart
-} from "./dist/";
+} from "./src/index";
 
 // in Expo - swipe left to see the following styling, or create your own
 const chartConfigs = [
+  {
+    backgroundColor: "#000000",
+    backgroundGradientFrom: "#1E2923",
+    backgroundGradientTo: "#08130D",
+    color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+    style: {
+      borderRadius: 16
+    },
+    propsForDots: {
+      r: "2",
+      strokeWidth: "2",
+      stroke: "#ffa726"
+    }
+  },
   {
     backgroundColor: "#000000",
     backgroundGradientFrom: "#1E2923",
@@ -131,6 +156,30 @@ export default class App extends React.Component {
                 backgroundColor: chartConfig.backgroundColor
               }}
             >
+              <Text style={labelStyle}>
+                Bezier Line Chart - 1 dataset with max
+              </Text>
+              <LineChart
+                bezier
+                maxYValue={100}
+                data={bezierData}
+                width={width}
+                height={height}
+                yAxisLabel="$"
+                yAxisSuffix="k"
+                chartConfig={chartConfig}
+                style={graphStyle}
+                verticalLabelRotation={20}
+                onDataPointClick={({ value, getColor }) =>
+                  showMessage({
+                    message: `${value}`,
+                    description: "You selected this value",
+                    backgroundColor: getColor(0.9)
+                  })
+                }
+                formatXLabel={label => label.toUpperCase()}
+              />
+
               <Text style={labelStyle}>Bezier Line Chart</Text>
               <LineChart
                 bezier
