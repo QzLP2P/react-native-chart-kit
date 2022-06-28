@@ -14,15 +14,6 @@ import {
   stackedBarGraphData
 } from "./data";
 
-// import {
-//   BarChart,
-//   ContributionGraph,
-//   LineChart,
-//   PieChart,
-//   ProgressChart,
-//   StackedBarChart
-// } from "./dist/";
-
 import {
   BarChart,
   ContributionGraph,
@@ -30,7 +21,17 @@ import {
   PieChart,
   ProgressChart,
   StackedBarChart
-} from "./src/index";
+} from "./dist/";
+
+// Uncomment for update component
+// import {
+//   BarChart,
+//   ContributionGraph,
+//   LineChart,
+//   PieChart,
+//   ProgressChart,
+//   StackedBarChart
+// } from "./src/index";
 
 // in Expo - swipe left to see the following styling, or create your own
 const chartConfigs = [
