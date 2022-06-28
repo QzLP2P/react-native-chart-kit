@@ -58,6 +58,10 @@ export interface LineChartProps extends AbstractChartProps {
    */
   height: number;
   /**
+   * Define the maximum value for the graph.
+   */
+  maxYValue?: number;
+  /**
    * Show dots on the line - default: True.
    */
   withDots?: boolean;
@@ -279,61 +283,63 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
       }
     } = this.props;
     const xMax = this.getXMaxValues(data);
-    data.forEach(dataset => {
-      if (dataset.withDots == false) return;
+    data
+      .filter(x => x.withDots || x.withDots === undefined)
+      .forEach(dataset => {
+        if (!dataset.withDots === false) return;
 
-      dataset.data.forEach((x, i) => {
-        if (hidePointsAtIndex.includes(i)) {
-          return;
-        }
-
-        const cx = paddingRight + (i * (width - paddingRight)) / xMax;
-
-        const cy =
-          ((baseHeight - this.calcHeight(x, datas, height)) / 4) * 3 +
-          paddingTop;
-
-        const onPress = () => {
-          if (!onDataPointClick || hidePointsAtIndex.includes(i)) {
+        dataset.data.forEach((x, i) => {
+          if (hidePointsAtIndex.includes(i)) {
             return;
           }
 
-          onDataPointClick({
-            index: i,
-            value: x,
-            dataset,
-            x: cx,
-            y: cy,
-            getColor: opacity => this.getColor(dataset, opacity)
-          });
-        };
+          const cx = paddingRight + (i * (width - paddingRight)) / xMax;
 
-        output.push(
-          <Circle
-            key={Math.random()}
-            cx={cx}
-            cy={cy}
-            fill={
-              typeof getDotColor === "function"
-                ? getDotColor(x, i)
-                : this.getColor(dataset, 0.9)
+          const cy =
+            ((baseHeight - this.calcHeight(x, datas, height)) / 4) * 3 +
+            paddingTop;
+
+          const onPress = () => {
+            if (!onDataPointClick || hidePointsAtIndex.includes(i)) {
+              return;
             }
-            onPress={onPress}
-            {...this.getPropsForDots(x, i)}
-          />,
-          <Circle
-            key={Math.random()}
-            cx={cx}
-            cy={cy}
-            r="14"
-            fill="#fff"
-            fillOpacity={0}
-            onPress={onPress}
-          />,
-          renderDotContent({ x: cx, y: cy, index: i, indexData: x })
-        );
+
+            onDataPointClick({
+              index: i,
+              value: x,
+              dataset,
+              x: cx,
+              y: cy,
+              getColor: opacity => this.getColor(dataset, opacity)
+            });
+          };
+
+          output.push(
+            <Circle
+              key={Math.random()}
+              cx={cx}
+              cy={cy}
+              fill={
+                typeof getDotColor === "function"
+                  ? getDotColor(x, i)
+                  : this.getColor(dataset, 0.9)
+              }
+              onPress={onPress}
+              {...this.getPropsForDots(x, i)}
+            />,
+            <Circle
+              key={Math.random()}
+              cx={cx}
+              cy={cy}
+              r="14"
+              fill="#fff"
+              fillOpacity={0}
+              onPress={onPress}
+            />,
+            renderDotContent({ x: cx, y: cy, index: i, indexData: x })
+          );
+        });
       });
-    });
 
     return output;
   };
@@ -796,6 +802,7 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
     const {
       width,
       height,
+      maxYValue,
       data,
       withScrollableDot = false,
       withShadow = true,
@@ -836,7 +843,17 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
       horizontalLabelRotation
     };
 
-    const datas = this.getDatas(data.datasets);
+    let datasetToUse: Dataset[] = data.datasets;
+    if (maxYValue) {
+      const newDataSet: Dataset = {
+        data: [maxYValue],
+        withDots: false,
+        strokeWidth: 0
+      };
+      datasetToUse.push(newDataSet);
+    }
+
+    const datas = this.getDatas(datasetToUse);
 
     let count = Math.min(...datas) === Math.max(...datas) ? 1 : 4;
     if (segments) {
@@ -865,7 +882,7 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
             {this.renderDefs({
               ...config,
               ...chartConfig,
-              data: data.datasets
+              data: datasetToUse
             })}
             <G>
               {withHorizontalLines &&
@@ -901,7 +918,7 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
                 (withInnerLines
                   ? this.renderVerticalLines({
                       ...config,
-                      data: data.datasets[0].data,
+                      data: datasetToUse[0].data,
                       paddingTop: paddingTop as number,
                       paddingRight: paddingRight as number
                     })
@@ -929,14 +946,14 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
                 ...chartConfig,
                 paddingRight: paddingRight as number,
                 paddingTop: paddingTop as number,
-                data: data.datasets
+                data: datasetToUse
               })}
             </G>
             <G>
               {withShadow &&
                 this.renderShadow({
                   ...config,
-                  data: data.datasets,
+                  data: datasetToUse,
                   paddingRight: paddingRight as number,
                   paddingTop: paddingTop as number,
                   useColorFromDataset: chartConfig.useShadowColorFromDataset
@@ -946,7 +963,7 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
               {withDots &&
                 this.renderDots({
                   ...config,
-                  data: data.datasets,
+                  data: datasetToUse,
                   paddingTop: paddingTop as number,
                   paddingRight: paddingRight as number,
                   onDataPointClick
@@ -957,7 +974,7 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
                 this.renderScrollableDot({
                   ...config,
                   ...chartConfig,
-                  data: data.datasets,
+                  data: datasetToUse,
                   paddingTop: paddingTop as number,
                   paddingRight: paddingRight as number,
                   onDataPointClick,
@@ -968,7 +985,7 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
               {decorator &&
                 decorator({
                   ...config,
-                  data: data.datasets,
+                  data: datasetToUse,
                   paddingTop,
                   paddingRight
                 })}
@@ -981,13 +998,15 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
             contentContainerStyle={{ width: width * 2 }}
             showsHorizontalScrollIndicator={false}
             scrollEventThrottle={16}
-            onScroll={Animated.event([
-              {
-                nativeEvent: {
-                  contentOffset: { x: scrollableDotHorizontalOffset }
+            onScroll={Animated.event(
+              [
+                {
+                  nativeEvent: {
+                    contentOffset: { x: scrollableDotHorizontalOffset }
+                  }
                 }
-              }
-            ], { useNativeDriver: false }
+              ],
+              { useNativeDriver: false }
             )}
             horizontal
             bounces={false}

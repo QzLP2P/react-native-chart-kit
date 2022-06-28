@@ -1,5 +1,14 @@
 // Mock data object used for LineChart and BarChart
 
+const bezierData = {
+  labels: ["January", "February", "March", "April", "May", "June"],
+  datasets: [
+    {
+      data: [30, 90, 67, 54, 10, 2]
+    }
+  ]
+};
+
 const data = {
   labels: ["January", "February", "March", "April", "May", "June"],
   datasets: [
@@ -84,12 +93,16 @@ const progressChartData = {
 const stackedBarGraphData = {
   labels: ["Test1", "Test2"],
   legend: ["L1", "L2", "L3"],
-  data: [[60, 60, 60], [30, 30, 60]],
+  data: [
+    [60, 60, 60],
+    [30, 30, 60]
+  ],
   barColors: ["#dfe4ea", "#ced6e0", "#a4b0be"]
 };
 
 export {
   data,
+  bezierData,
   contributionData,
   pieChartData,
   progressChartData,
