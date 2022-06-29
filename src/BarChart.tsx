@@ -14,7 +14,7 @@ import AbstractChart, {
   AbstractChartConfig,
   AbstractChartProps
 } from "./AbstractChart";
-import { ChartData } from "./HelperTypes";
+import { ChartData, Dataset } from "./HelperTypes";
 
 const barWidth = 32;
 
@@ -45,7 +45,20 @@ export interface BarChartProps extends AbstractChartProps {
   showBarTops?: boolean;
   showValuesOnTopOfBars?: boolean;
   withCustomBarColorFromData?: boolean;
+  /**
+   * Don't use gradient for the bars - default: false.
+   */
   flatColor?: boolean;
+  /**
+   * Callback that is called when a bar is clicked.
+   */
+  onDataBarClick?: (data: {
+    index: number;
+    value: number;
+    dataset: Dataset;
+    x: number;
+    y: number;
+  }) => void;
 }
 
 type BarChartState = {};
@@ -63,31 +76,51 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     paddingTop,
     paddingRight,
     barRadius,
-    withCustomBarColorFromData
+    withCustomBarColorFromData,
+    onDataBarClick
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     "width" | "height" | "paddingRight" | "paddingTop" | "barRadius"
   > & {
-    data: number[];
+    data: Dataset;
     withCustomBarColorFromData: boolean;
+    onDataBarClick: BarChartProps["onDataBarClick"];
   }) => {
-    const baseHeight = this.calcBaseHeight(data, height);
+    const dataValue = data.data;
 
-    return data.map((x, i) => {
-      const barHeight = this.calcHeight(x, data, height);
+    const baseHeight = this.calcBaseHeight(dataValue, height);
+
+    return dataValue.map((x, i) => {
+      const barHeight = this.calcHeight(x, dataValue, height);
       const barWidth = 32 * this.getBarPercentage();
+
+      const xRect =
+        paddingRight +
+        (i * (width - paddingRight)) / dataValue.length +
+        barWidth / 2;
+
+      const yRect =
+        ((barHeight > 0 ? baseHeight - barHeight : baseHeight) / 4) * 3 +
+        paddingTop;
+
+      const onPress = () => {
+        if (!onDataBarClick) {
+          return;
+        }
+        onDataBarClick({
+          index: i,
+          value: x,
+          dataset: data,
+          x: xRect,
+          y: yRect
+        });
+      };
+
       return (
         <Rect
           key={Math.random()}
-          x={
-            paddingRight +
-            (i * (width - paddingRight)) / data.length +
-            barWidth / 2
-          }
-          y={
-            ((barHeight > 0 ? baseHeight - barHeight : baseHeight) / 4) * 3 +
-            paddingTop
-          }
+          x={xRect}
+          y={yRect}
           rx={barRadius}
           width={barWidth}
           height={(Math.abs(barHeight) / 4) * 3}
@@ -96,6 +129,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               ? `url(#customColor_0_${i})`
               : "url(#fillShadowGradientFrom)"
           }
+          onPress={onPress}
         />
       );
     });
@@ -228,7 +262,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       showValuesOnTopOfBars = false,
       flatColor = false,
       segments = 4,
-      chartConfig
+      chartConfig,
+      onDataBarClick
     } = this.props;
 
     const {
@@ -284,7 +319,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               ? this.renderHorizontalLines({
                   ...config,
                   count: segments,
-                  paddingTop
+                  paddingTop,
+                  paddingRight
                 })
               : null}
           </G>
@@ -314,10 +350,11 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
           <G>
             {this.renderBars({
               ...config,
-              data: data.datasets[0].data,
+              data: data.datasets[0],
               paddingTop: paddingTop as number,
               paddingRight: paddingRight as number,
-              withCustomBarColorFromData: withCustomBarColorFromData
+              withCustomBarColorFromData: withCustomBarColorFromData,
+              onDataBarClick
             })}
           </G>
           <G>
