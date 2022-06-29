@@ -1,11 +1,12 @@
 {
   "name": "react-native-chart-kit-enhanced",
-  "version": "6.12.1",
+  "version": "6.12.4",
   "devDependencies": {
     "@types/react-native": "^0.62.13",
     "babel-eslint": "10.x",
     "babel-plugin-module-resolver": "^3.1.1",
     "babel-polyfill": "^6.26.0",
+    "babel-preset-expo": "^8.3.0",
     "eslint": "6.x",
     "eslint-config-react-app": "^5.0.2",
     "eslint-plugin-flowtype": "^4.3.0",

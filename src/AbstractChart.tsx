@@ -1,10 +1,20 @@
 import React, { Component } from "react";
-import { Defs, Line, LinearGradient, Stop, Text } from "react-native-svg";
+import {
+  Color,
+  Defs,
+  Line,
+  LinearGradient,
+  Stop,
+  Text
+} from "react-native-svg";
 
 import { ChartConfig, Dataset, PartialBy } from "./HelperTypes";
 
 export interface AbstractChartProps {
   fromZero?: boolean;
+  /**
+   * Define max Y value.. (Will use scaling)
+   */
   fromNumber?: number;
   chartConfig?: AbstractChartConfig;
   yAxisLabel?: string;
@@ -44,7 +54,9 @@ class AbstractChart<
 > extends Component<AbstractChartProps & IProps, AbstractChartState & IState> {
   calcScaler = (data: number[]) => {
     if (this.props.fromZero && this.props.fromNumber) {
-      return Math.max(...data, this.props.fromNumber) - Math.min(...data, 0) || 1;
+      return (
+        Math.max(...data, this.props.fromNumber) - Math.min(...data, 0) || 1
+      );
     } else if (this.props.fromZero) {
       return Math.max(...data, 0) - Math.min(...data, 0) || 1;
     } else if (this.props.fromNumber) {
@@ -143,7 +155,6 @@ class AbstractChart<
       verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
     } = config;
     const basePosition = height * verticalLabelsHeightPercentage;
-
     return [...new Array(count + 1)].map((_, i) => {
       const y = (basePosition / count) * i + paddingTop;
       return (
@@ -250,7 +261,8 @@ class AbstractChart<
     stackedBar = false,
     verticalLabelRotation = 0,
     formatXLabel = xLabel => xLabel,
-    verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
+    verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE,
+    labelColors = []
   }: Pick<
     AbstractChartConfig,
     | "labels"
@@ -263,6 +275,7 @@ class AbstractChart<
     | "verticalLabelRotation"
     | "formatXLabel"
     | "verticalLabelsHeightPercentage"
+    | "labelColors"
   >) => {
     const {
       xAxisLabel = "",
@@ -294,6 +307,16 @@ class AbstractChart<
         fontSize * 2 +
         xLabelsOffset;
 
+      // Define custom color from labelColors
+      let color: Color =
+        this.getPropsForLabels().fill || this.getPropsForVerticalLabels().fill;
+      if (labelColors && labelColors.length > 0) {
+        if (labelColors[i]) {
+          // apply diff color for each label
+          color = labelColors[i](0.8);
+        }
+      }
+
       return (
         <Text
           origin={`${x}, ${y}`}
@@ -304,6 +327,7 @@ class AbstractChart<
           textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
           {...this.getPropsForLabels()}
           {...this.getPropsForVerticalLabels()}
+          fill={color}
         >
           {`${formatXLabel(label)}${xAxisLabel}`}
         </Text>

@@ -58,10 +58,6 @@ export interface LineChartProps extends AbstractChartProps {
    */
   height: number;
   /**
-   * Define the maximum value for the graph.
-   */
-  maxYValue?: number;
-  /**
    * Show dots on the line - default: True.
    */
   withDots?: boolean;
@@ -802,7 +798,6 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
     const {
       width,
       height,
-      maxYValue,
       data,
       withScrollableDot = false,
       withShadow = true,
@@ -844,15 +839,6 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
     };
 
     let datasetToUse: Dataset[] = data.datasets;
-    if (maxYValue) {
-      const newDataSet: Dataset = {
-        data: [maxYValue],
-        withDots: false,
-        strokeWidth: 0
-      };
-      datasetToUse.push(newDataSet);
-    }
-
     const datas = this.getDatas(datasetToUse);
 
     let count = Math.min(...datas) === Math.max(...datas) ? 1 : 4;
@@ -937,7 +923,8 @@ class LineChart extends AbstractChart<LineChartProps, LineChartState> {
                   labels,
                   paddingTop: paddingTop as number,
                   paddingRight: paddingRight as number,
-                  formatXLabel
+                  formatXLabel,
+                  labelColors: chartConfig.labelColors
                 })}
             </G>
             <G>
