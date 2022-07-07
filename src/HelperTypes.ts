@@ -96,6 +96,10 @@ export interface ChartConfig {
    */
   labelColor?: (opacity: number) => string;
   /**
+   * Defines the function that is used to calculate the color of the each labels used in a chart.
+   */
+  labelColors?: ((opacity: number) => string)[];
+  /**
    * Defines the base stroke width in a chart
    */
   strokeWidth?: number;
